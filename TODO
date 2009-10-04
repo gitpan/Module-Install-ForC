@@ -1,0 +1,4 @@
+AC_FUNC_CLOSEDIR_VOID
+
+support dependencies of headers
+refactoring the tests
