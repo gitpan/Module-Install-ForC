@@ -40,7 +40,6 @@ t/020_shared_lib/Makefile.PL
 t/020_shared_lib/test.t
 t/030_static_lib/hi.c
 t/030_static_lib/hi.h
-t/030_static_lib/hi.o
 t/030_static_lib/inc/Module/Install.pm
 t/030_static_lib/inc/Module/Install/Base.pm
 t/030_static_lib/inc/Module/Install/ForC.pm
@@ -49,11 +48,9 @@ t/030_static_lib/inc/Module/Install/Metadata.pm
 t/030_static_lib/libhi.a
 t/030_static_lib/main
 t/030_static_lib/main.c
-t/030_static_lib/main.o
 t/030_static_lib/Makefile
 t/030_static_lib/Makefile.PL
 t/030_static_lib/test
-t/030_static_lib/test.o
 t/030_static_lib/test.t
 t/040_cxx/inc/Module/Install.pm
 t/040_cxx/inc/Module/Install/Base.pm
@@ -62,7 +59,6 @@ t/040_cxx/inc/Module/Install/ForC/Env.pm
 t/040_cxx/inc/Module/Install/Metadata.pm
 t/040_cxx/main
 t/040_cxx/main.cc
-t/040_cxx/main.o
 t/040_cxx/Makefile
 t/040_cxx/Makefile.PL
 t/040_cxx/test.t
@@ -73,7 +69,6 @@ t/050_tcc/inc/Module/Install/ForC/Env.pm
 t/050_tcc/inc/Module/Install/Metadata.pm
 t/050_tcc/main
 t/050_tcc/main.c
-t/050_tcc/main.o
 t/050_tcc/Makefile
 t/050_tcc/Makefile.PL
 t/050_tcc/test.t
