@@ -24,7 +24,7 @@ sub new {
             LIBSUFFIX     => '.a',
             SHLIBPREFIX   => 'lib',
             LDMODULEFLAGS => ['-shared'],
-            INSTALL       => 'install',
+            CCDLFLAGS     => ['-fPIC'], # TODO: rename
         );
         my %win32 = (
             CC  => $ENV{CC}  || 'gcc',
@@ -34,12 +34,17 @@ sub new {
             LIBPREFIX   => '',
             LIBSUFFIX   => '.lib',
             SHLIBPREFIX => '',
-            INSTALL       => 'copy',
+            CCDLFLAGS   => [], # TODO: rename
         );
         my %darwin = ( LDMODULEFLAGS => ['-dynamiclib'], );
+        my %solaris = (
+            CCDLFLAGS     => ['-kPIC'],
+            LDMODULEFLAGS => ['-G'],
+        );
 
-          $^O eq 'MSWin32' ? %win32
-        : $^O eq 'darwin'  ? (%unix, %darwin)
+          $^O eq 'MSWin32'  ? %win32
+        : $^O eq 'darwin'   ? (%unix, %darwin)
+        : $^O eq 'solaris'  ? (%unix, %solaris)
         : %unix;
     };
 
@@ -50,7 +55,6 @@ sub new {
         CPPPATH       => [],
         LIBS          => [],
         LIBPATH       => [],
-        CCCDLFLAGS    => [], # TODO: rename
         SHLIBSUFFIX   => '.' . $Config{so},
         RANLIB        => 'ranlib',
         PROGSUFFIX    => ( $Config{exe_ext} ? ( '.' . $Config{exe_ext} ) : '' ),
@@ -109,7 +113,9 @@ sub install_lib {
 sub install {
     my ($self, $target, $suffix) = @_;
     my $dst = File::Spec->catfile($self->{PREFIX}, $suffix);
-    push @{$Module::Install::ForC::INSTALL{$suffix}}, "$self->{INSTALL} $target $dst";
+    ($target =~ m{['"\n\{\}]}) and die "invalid file name for install: $target";
+    ($suffix =~ m{['"\n\{\}]}) and die "invalid file name for install: $suffix";
+    push @{$Module::Install::ForC::INSTALL{$suffix}}, "\$(PERL) -e 'use File::Copy; File::Copy::copy(q{$target}, q{$dst}) or die qq{Copy failed: $!}'";
 }
 
 sub try_cc {
@@ -178,11 +184,6 @@ sub have_library {
         "C library $library",
         $self->clone()->append( 'LIBS' => $library )->try_cc("int main(){return 0;}")
     );
-}
-
-sub require_header {
-    my ($self, $header,) = @_;
-    $self->have_header($header) or die "Missing required header: '$header'";
 }
 
 sub clone {
@@ -353,4 +354,4 @@ int main() {
 1;
 __END__
 
-#line 409
+#line 450
