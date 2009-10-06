@@ -100,8 +100,15 @@ t/090_dist/inc/Module/Install/Metadata.pm
 t/090_dist/Makefile
 t/090_dist/Makefile.PL
 t/090_dist/MANIFEST
-t/090_dist/MANIFEST.bak
 t/090_dist/test.t
+t/100_dist_noconf/inc/Module/Install.pm
+t/100_dist_noconf/inc/Module/Install/Base.pm
+t/100_dist_noconf/inc/Module/Install/ForC.pm
+t/100_dist_noconf/inc/Module/Install/Metadata.pm
+t/100_dist_noconf/Makefile
+t/100_dist_noconf/Makefile.PL
+t/100_dist_noconf/MANIFEST
+t/100_dist_noconf/test.t
 TODO
 xt/01_podspell.t
 xt/03_pod.t
