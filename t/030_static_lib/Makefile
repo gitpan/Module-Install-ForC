@@ -57,12 +57,12 @@ libhi.a: hi.o Makefile
 	ranlib libhi.a
 
 hi.o: hi.c Makefile
-	gcc    -c -o hi.o hi.c
+	cc    -c -o hi.o hi.c
 
 main: main.o
 	cc  -o main main.o -L. -lhi
 
 main.o: main.c Makefile
-	gcc    -c -o main.o main.c
+	cc    -c -o main.o main.c
 
 
