@@ -50,6 +50,8 @@ t/090_dist/test.t
 t/100_dist_noconf/Makefile.PL
 t/100_dist_noconf/MANIFEST
 t/100_dist_noconf/test.t
+t/110_test/t/01_simple.c
+t/110_test/test.t
 TODO
 xt/01_podspell.t
 xt/03_pod.t
