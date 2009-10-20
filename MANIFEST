@@ -9,6 +9,7 @@ inc/Module/Install/Fetch.pm
 inc/Module/Install/Include.pm
 inc/Module/Install/Makefile.pm
 inc/Module/Install/Metadata.pm
+inc/Module/Install/ReadmeFromPod.pm
 inc/Module/Install/Win32.pm
 inc/Module/Install/WriteAll.pm
 inc/Test/More.pm
@@ -44,8 +45,10 @@ t/070_install/hello.c
 t/070_install/test.t
 t/080_parse_config/test.t
 t/090_dist/Makefile.PL
+t/090_dist/MANIFEST
 t/090_dist/test.t
 t/100_dist_noconf/Makefile.PL
+t/100_dist_noconf/MANIFEST
 t/100_dist_noconf/test.t
 t/110_test/t/01_simple.c
 t/110_test/test.t
