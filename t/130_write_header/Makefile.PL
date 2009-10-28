@@ -4,7 +4,7 @@ version 0.01;
 license 'perl';
 
 my $env = env_for_c();
-$env->program('main' => ["main.cc"]);
+$env->have_library('c');
+$env->have_header('stdio.h');
 
-WriteMakefile();
-
+WriteHeaderForC('test_config.h');

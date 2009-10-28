@@ -14,6 +14,7 @@ sub new {
     my $class = shift;
     my $mi    = shift;
     return if $mi eq '_top';
+    return if @_ %2 != 0;
     my %args = @_;
 
     # platform specific vars
@@ -78,7 +79,7 @@ sub new {
     }
 
     # fucking '.C' extension support.
-    if ($^O eq 'Win32' || $^O eq 'darwin') {
+    if ($^O eq 'MSWin32' || $^O eq 'darwin') {
         # case sensitive fs.Yes, I know the darwin supports case-sensitive fs.
         # But, also supports case-insensitive one :)
         push @{$self->{CFILESUFFIX}}, '.C';
@@ -87,10 +88,10 @@ sub new {
     }
 
     if (my $inc = $mi->makemaker_args->{INC}) {
-        $self->append( CPPPATH => $inc );
+        $self->parse_config($inc);
     }
     if (my $libs = $mi->makemaker_args->{LIBS}) {
-        $self->append( LIBS    => $libs );
+        $self->parse_config($libs);
     }
 
     return $self;
@@ -161,7 +162,12 @@ sub install {
     my $dst = File::Spec->catfile($self->{PREFIX}, $suffix);
     ($target =~ m{['"\n\{\}]}) and die "invalid file name for install: $target";
     ($suffix =~ m{['"\n\{\}]}) and die "invalid file name for install: $suffix";
-    push @{$Module::Install::ForC::INSTALL{$suffix}}, qq[\$(CP) "$target" "$dst"];
+    $self->_push_postamble(<<"...");
+install :: all config
+    \$(CP) "$target" "$dst"
+    \$(NOECHO) \$(NOOP)
+
+...
 }
 
 sub try_cc {
@@ -214,13 +220,26 @@ sub _quiet_system {
     return $rv;
 }
 
+sub _add_def {
+    my ($self, $key, $val) = @_;
+    $key =~ tr{a-z./\055}{A-Z___};
+    $key = "HAVE_" . $key;
+
+    $self->append(CCFLAGS => ["-D$key=$val"]);
+    push @Module::Install::ForC::CONFIG_H, "#define $key $val\n";
+}
+
 
 sub have_header {
     my ($self, $header,) = @_;
-    _checking_for(
+    my $ret = _checking_for(
         "C header $header",
         $self->try_cc("#include <$header>\nint main() { return 0; }")
     );
+    if ($ret) {
+        $self->_add_def($header => 1);
+    }
+    return $ret;
 }
 
 sub _checking_for {
@@ -231,10 +250,15 @@ sub _checking_for {
 
 sub have_library {
     my ($self, $library,) = @_;
-    _checking_for(
+    my $ret = _checking_for(
         "C library $library",
         $self->clone()->append( 'LIBS' => $library )->try_cc("int main(){return 0;}")
     );
+    if ($ret) {
+        $self->append(CCFLAGS => "-DHAVE_LIB$library=1");
+        $self->_add_def("LIB$library" => 1);
+    }
+    return $ret;
 }
 
 sub clone {
@@ -285,7 +309,7 @@ sub program {
     my $clone = $self->clone()->append(%specific_opts);
 
     my $target = "$bin" . $clone->{PROGSUFFIX};
-    _push_target($target);
+    $self->_push_target($target);
 
     my @objects = $clone->_objects($srcs);
 
@@ -312,9 +336,10 @@ sub test {
 $test_file: $test_executable
     \$(ABSPERLRUN) -I\$(INST_LIB) -e "print qq[exec q!$test_executable! or die \$!]" > $test_file
 
-...
+pure_all :: $test_file
+    \$(NOECHO) \$(NOOP)
 
-    push @Module::Install::ForC::TESTS, $test_file;
+...
 
     return $test_file;
 }
@@ -326,8 +351,9 @@ sub _is_cpp {
 }
 
 sub _push_postamble {
-    (my $src = $_[1]) =~ s/^[ ]{4}/\t/gmsx;
-    $Module::Install::ForC::POSTAMBLE .= $src;
+    my ($self, $src) = @_;
+    $src =~ s/^[ ]{4}/\t/gmsx;
+    $self->{mi}->postamble($src);
 }
 
 sub _cpppath {
@@ -344,6 +370,9 @@ sub _compile_objects {
         my $compiler = $self->_is_cpp($srcs->[$i]) ? $self->{CXX} : $self->{CC};
         my $object_with_opt = ($compiler =~ /^cl/ && $^O eq 'MSWin32') ? "-c -Fo$objects->[$i]" : "-c -o $objects->[$i]";
         $self->_push_postamble(<<"...");
+clean ::
+	\$(RM_F) $objects->[$i]
+
 $objects->[$i]: $srcs->[$i] Makefile
 	$compiler $opt @{ $self->{CCFLAGS} } @{[ $self->_cpppath ]} $object_with_opt $srcs->[$i]
 
@@ -364,8 +393,15 @@ sub _ld {
 }
 
 sub _push_target {
-    my $target = shift;
-    push @Module::Install::ForC::TARGETS, $target;
+    my ($self, $target) = @_;
+    $self->_push_postamble(<<"...");
+config :: $target
+    \$(NOECHO) \$(NOOP)
+
+clean ::
+    \$(RM_F) $target
+
+...
 }
 
 sub shared_library {
@@ -375,7 +411,7 @@ sub shared_library {
 
     my $target = "$clone->{SHLIBPREFIX}$lib$clone->{SHLIBSUFFIX}";
 
-    _push_target($target);
+    $self->_push_target($target);
 
     my @objects = $clone->_objects($srcs);
 
@@ -397,7 +433,7 @@ sub static_library {
 
     my $target = "$clone->{LIBPREFIX}$lib$clone->{LIBSUFFIX}";
 
-    _push_target($target);
+    $self->_push_target($target);
 
     my @objects = $clone->_objects($srcs);
 
