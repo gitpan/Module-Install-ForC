@@ -34,9 +34,6 @@ t/030_static_lib/hi.h
 t/030_static_lib/main.c
 t/030_static_lib/Makefile.PL
 t/030_static_lib/test.t
-t/040_cxx/main.cc
-t/040_cxx/Makefile.PL
-t/040_cxx/test.t
 t/050_tcc/main.c
 t/050_tcc/Makefile.PL
 t/050_tcc/test.t
@@ -65,8 +62,14 @@ t/140_clib/foo.h
 t/140_clib/lib/Foo.pm
 t/140_clib/Makefile.PL
 t/140_clib/test.t
+t/150_mm/main.mm
+t/150_mm/Makefile.PL
+t/150_mm/test.t
 t/Utils.pm
 TODO
 xt/01_podspell.t
 xt/03_pod.t
+xt/040_cxx/main.cc
+xt/040_cxx/Makefile.PL
+xt/040_cxx/test.t
 xt/perlcriticrc
